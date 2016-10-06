@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMI xmlns:UML="org.omg.xmi.namespace.UML" xmi.version="1.2" timestamp="Fri Jul 03 13:23:35 CEST 2015">
+	<XMI.header>
+		<XMI.metamodel xmi.name="UML" xmi.version="1.4"/>
+	</XMI.header>
+	<XMI.content>
+		<UML:Model xmi.id="be.nabu.uml.xmi:base:0000000000000000" name="baseTypes" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false">
+			<UML:Namespace.ownedElement>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000001" name="string" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000002" name="int" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000003" name="integer" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000004" name="boolean" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000005" name="positiveInteger" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000006" name="negativeInteger" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000007" name="nonNegativeInteger" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000008" name="nonPositiveInteger" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000009" name="unsignedShort" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000010" name="float" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000011" name="double" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000012" name="decimal" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000013" name="byte" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000014" name="short" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000015" name="unsignedByte" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000016" name="long" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000017" name="unsignedInt" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000018" name="anyURI" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000019" name="date" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000020" name="dateTime" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000021" name="time" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000022" name="gMonth" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000023" name="gDay" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000024" name="gMonthDay" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000025" name="gYear" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000026" name="gYearMonth" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000027" name="base64Binary" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000028" name="anySimpleType" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+				<UML:DataType xmi.id="be.nabu.uml.xmi:base:types:0000000000000029" name="uuid" isSpecification="false" isRoot="false" isLeaf="false" isAbstract="false"/>
+		
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000001' name='pattern' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000002' name='length' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000003' name='maxExclusive' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000004' name='maxInclusive' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000005' name='minExclusive' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000006' name='minInclusive' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000007' name='minLength' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000008' name='maxLength' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000009' name='nillable' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000010' name='attributeQualifiedDefault' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000011' name='elementQualifiedDefault' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000012' name='format' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000013' name='language' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000014' name='timezone' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000015' name='qualified' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000016' name='country' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000017' name='useExtensions' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000018' name='collectionName' isSpecification='false'/>
+			</UML:Namespace.ownedElement>
+		</UML:Model>
+	</XMI.content>
+</XMI>
