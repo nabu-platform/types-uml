@@ -43,6 +43,7 @@ import be.nabu.libs.types.api.Type;
 import be.nabu.libs.types.base.ComplexElementImpl;
 import be.nabu.libs.types.base.SimpleElementImpl;
 import be.nabu.libs.types.base.ValueImpl;
+import be.nabu.libs.types.properties.CollectionNameProperty;
 import be.nabu.libs.types.properties.CommentProperty;
 import be.nabu.libs.types.properties.FormatProperty;
 import be.nabu.libs.types.properties.MaxOccursProperty;
@@ -82,8 +83,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	private boolean addDatabaseFields = true;
 	private boolean uuids = true;
 	private boolean useExtensions = false;
+	private boolean generateCollectionNames = false;
 	// the xmi id for the local "useExtensions" property
-	private String localUseExtensions;
+	private String localUseExtensions, localCollectionName;
 	private Map<String, Boolean> localUseExtensionsMap = new HashMap<String, Boolean>();
 	// the xmi id for a "documentation" tag
 	private String documentationId;
@@ -110,6 +112,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 			for (org.w3c.dom.Element tag : new XPath("uml:Namespace.ownedElement/uml:TagDefinition").setNamespaceContext(resolver).query(model).asElementList()) {
 				if ("useExtensions".equals(tag.getAttribute("name"))) {
 					localUseExtensions = tag.getAttribute("xmi.id");
+				}
+				else if ("collectionName".equals(tag.getAttribute("name"))) {
+					localCollectionName = tag.getAttribute("xmi.id");
 				}
 				else if ("documentation".equals(tag.getAttribute("name"))) {
 					documentationId = tag.getAttribute("xmi.id");	
@@ -168,6 +173,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				dataTypes.put(clazz.getAttribute("xmi.id"), structure);
 				registry.register(structure);
+				boolean hasCollectionName = false;
 				// you can set a tag on a class to have it use extensions
 				for (org.w3c.dom.Element tag : new XPath("uml:ModelElement.taggedValue/uml:TaggedValue").setNamespaceContext(resolver).query(clazz).asElementList()) {
 					String value = new XPath("uml:TaggedValue.dataValue").setNamespaceContext(resolver).query(tag).asString();
@@ -181,6 +187,13 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					if (localUseExtensions != null && localUseExtensions.equals(id)) {
 						localUseExtensionsMap.put(clazz.getAttribute("xmi.id"), value.equals("true"));
 					}
+					else if (localCollectionName != null && localCollectionName.equals(id)) {
+						structure.setProperty(new ValueImpl<String>(CollectionNameProperty.getInstance(), value));
+						hasCollectionName = true;
+					}
+				}
+				if (!hasCollectionName && generateCollectionNames) {
+					structure.setProperty(new ValueImpl<String>(CollectionNameProperty.getInstance(), structure.getName() + "s"));
 				}
 			}
 			// need to fill in attributes _after_ all classes are loaded, otherwise we can't resolve references
@@ -471,4 +484,29 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	public String getId() {
 		return id;
 	}
+
+	public boolean isGenerateFlatDocuments() {
+		return generateFlatDocuments;
+	}
+
+	public void setGenerateFlatDocuments(boolean generateFlatDocuments) {
+		this.generateFlatDocuments = generateFlatDocuments;
+	}
+
+	public boolean isAddDatabaseFields() {
+		return addDatabaseFields;
+	}
+
+	public void setAddDatabaseFields(boolean addDatabaseFields) {
+		this.addDatabaseFields = addDatabaseFields;
+	}
+
+	public boolean isGenerateCollectionNames() {
+		return generateCollectionNames;
+	}
+
+	public void setGenerateCollectionNames(boolean generateCollectionNames) {
+		this.generateCollectionNames = generateCollectionNames;
+	}
+	
 }
