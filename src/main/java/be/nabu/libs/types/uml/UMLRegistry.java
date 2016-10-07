@@ -86,8 +86,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	private boolean useExtensions = false;
 	private boolean generateCollectionNames = false;
 	// the xmi id for the local "useExtensions" property
-	private String localUseExtensions, localCollectionName;
+	private String localUseExtensions, localCollectionName, localIgnoreExtensions;
 	private Map<String, Boolean> localUseExtensionsMap = new HashMap<String, Boolean>();
+	private Map<String, Boolean> localIgnoreExtensionsMap = new HashMap<String, Boolean>();
 	// the xmi id for a "documentation" tag
 	private String documentationId;
 	
@@ -116,6 +117,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				else if ("collectionName".equals(tag.getAttribute("name"))) {
 					localCollectionName = tag.getAttribute("xmi.id");
+				}
+				else if ("ignoreExtensions".equals(tag.getAttribute("name"))) {
+					localIgnoreExtensions = tag.getAttribute("xmi.id");
 				}
 				else if ("documentation".equals(tag.getAttribute("name"))) {
 					documentationId = tag.getAttribute("xmi.id");	
@@ -187,6 +191,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					}
 					if (localUseExtensions != null && localUseExtensions.equals(id)) {
 						localUseExtensionsMap.put(clazz.getAttribute("xmi.id"), value.equals("true"));
+					}
+					else if (localIgnoreExtensions != null && localIgnoreExtensions.equals(id)) {
+						localIgnoreExtensionsMap.put(clazz.getAttribute("xmi.id"), value.equals("true"));
 					}
 					else if (localCollectionName != null && localCollectionName.equals(id)) {
 						structure.setProperty(new ValueImpl<String>(CollectionNameProperty.getInstance(), value));
@@ -315,8 +322,8 @@ public class UMLRegistry implements DefinedTypeRegistry {
 			}
 			// load any generalizations between them (extensions)
 			for (org.w3c.dom.Element generalization : new XPath("uml:Namespace.ownedElement/uml:Generalization").setNamespaceContext(resolver).query(model).asElementList()) {
-				String superClass = new XPath("uml:Generalization.child/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
-				String childClass = new XPath("uml:Generalization.parent/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
+				String superClass = new XPath("uml:Generalization.parent/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
+				String childClass = new XPath("uml:Generalization.child/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
 				if (superClass == null || childClass == null) {
 					logger.error("Can not implement generalization from " + superClass + " to " + childClass);
 					continue;
@@ -327,7 +334,13 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					logger.error("Can not resolve " + superClass + " or " + childClass + ": " + superType + " / " + childType);
 					continue;
 				}
-				if (useExtensions || (localUseExtensionsMap.containsKey(superClass) && localUseExtensionsMap.get(superClass))) {
+				if (localIgnoreExtensionsMap.containsKey(superClass) && localIgnoreExtensionsMap.get(superClass) ) {
+					if (superType instanceof DefinedType && childType instanceof ComplexType && ((ComplexType) childType).get("id") != null) {
+						Element<?> element = ((ComplexType) childType).get("id");
+						element.setProperty(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) superType).getId() + ":id"));
+					}
+				}
+				else if (useExtensions || (localUseExtensionsMap.containsKey(superClass) && localUseExtensionsMap.get(superClass))) {
 					((ModifiableType) childType).setProperty(new ValueImpl<Type>(SuperTypeProperty.getInstance(), superType));
 				}
 				else if (childType instanceof ModifiableComplexType) {

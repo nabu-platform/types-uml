@@ -54,6 +54,7 @@
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000016' name='country' isSpecification='false'/>
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000017' name='useExtensions' isSpecification='false'/>
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000018' name='collectionName' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000019' name='ignoreExtensions' isSpecification='false'/>
 			</UML:Namespace.ownedElement>
 		</UML:Model>
 	</XMI.content>
