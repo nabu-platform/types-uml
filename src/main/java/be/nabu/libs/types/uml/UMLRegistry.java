@@ -69,6 +69,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		resolver.registerPrefix("uml", "org.omg.xmi.namespace.UML");
 	}
 	
+	private String createdField = "dbCreatedUtc", modifiedField = "dbModifiedUtc";
 	private String id;
 	private ModifiableTypeRegistry registry = new TypeRegistryImpl();
 	private Map<String, Element<?>> children = new HashMap<String, Element<?>>();
@@ -173,8 +174,12 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				if (addDatabaseFields) {
 					DefinedSimpleType<Date> dateWrapper = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(Date.class);
 					structure.add(new SimpleElementImpl("id", idType, structure));
-					structure.add(new SimpleElementImpl<Date>("dbCreatedUtc", dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
-					structure.add(new SimpleElementImpl<Date>("dbModifiedUtc", dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
+					if (createdField != null) {
+						structure.add(new SimpleElementImpl<Date>(createdField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
+					}
+					if (modifiedField != null) {
+						structure.add(new SimpleElementImpl<Date>(modifiedField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
+					}
 				}
 				dataTypes.put(clazz.getAttribute("xmi.id"), structure);
 				registry.register(structure);
@@ -521,6 +526,22 @@ public class UMLRegistry implements DefinedTypeRegistry {
 
 	public void setGenerateCollectionNames(boolean generateCollectionNames) {
 		this.generateCollectionNames = generateCollectionNames;
+	}
+
+	public String getCreatedField() {
+		return createdField;
+	}
+
+	public void setCreatedField(String createdField) {
+		this.createdField = createdField;
+	}
+
+	public String getModifiedField() {
+		return modifiedField;
+	}
+
+	public void setModifiedField(String modifiedField) {
+		this.modifiedField = modifiedField;
 	}
 	
 }
