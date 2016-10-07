@@ -45,6 +45,7 @@ import be.nabu.libs.types.base.SimpleElementImpl;
 import be.nabu.libs.types.base.ValueImpl;
 import be.nabu.libs.types.properties.CollectionNameProperty;
 import be.nabu.libs.types.properties.CommentProperty;
+import be.nabu.libs.types.properties.ForeignKeyProperty;
 import be.nabu.libs.types.properties.FormatProperty;
 import be.nabu.libs.types.properties.MaxOccursProperty;
 import be.nabu.libs.types.properties.MinOccursProperty;
@@ -292,7 +293,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						if (type instanceof ComplexType) {
 							if (generateFlatDocuments) {
 								if (type instanceof DefinedType) {
-									values.add(new ValueImpl<String>(ReferencedTypeProperty.getInstance(), ((DefinedType) type).getId()));
+									values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) type).getId() + ":id"));
 								}
 								child = new SimpleElementImpl(attributeName + "Id", idType, structure, values.toArray(new Value[values.size()]));
 							}
@@ -332,7 +333,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				else if (childType instanceof ModifiableComplexType) {
 					List<Value<?>> values = new ArrayList<Value<?>>();
 					if (childType instanceof DefinedType) {
-						values.add(new ValueImpl<String>(ReferencedTypeProperty.getInstance(), ((DefinedType) childType).getId()));
+						values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) childType).getId() + ":id"));
 					}
 					SimpleElementImpl element = new SimpleElementImpl(elementize(superType.getName()) + "Id", idType, (ComplexType) childType, values.toArray(new Value[values.size()]));
 					((ModifiableComplexType) childType).add(element);
@@ -373,7 +374,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					// the "to" is a many in a one to many relationship, map it in the to
 					if (toMaxOccurs != null && toMaxOccurs != 1) {
 						if (fromParticipant instanceof DefinedType) {
-							values.add(new ValueImpl<String>(ReferencedTypeProperty.getInstance(), ((DefinedType) fromParticipant).getId()));
+							values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) fromParticipant).getId() + ":id"));
 						}
 						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(fromParticipant.getName()) + "Id" : associationName, idType, toParticipant, values.toArray(new Value[values.size()]));
 						if (fromMinOccurs != null && fromMinOccurs != 1) {
@@ -384,7 +385,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					// in all other cases, map it in the from (this is either one to one or one to many with the many in the from)
 					else {
 						if (toParticipant instanceof DefinedType) {
-							values.add(new ValueImpl<String>(ReferencedTypeProperty.getInstance(), ((DefinedType) toParticipant).getId()));
+							values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) toParticipant).getId() + ":id"));
 						}
 						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(toParticipant.getName()) + "Id" : associationName, idType, fromParticipant, values.toArray(new Value[values.size()]));
 						if (toMinOccurs != null && toMinOccurs != 1) {
