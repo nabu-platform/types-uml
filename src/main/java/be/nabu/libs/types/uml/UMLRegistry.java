@@ -93,6 +93,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	// the xmi id for a "documentation" tag
 	private String documentationId;
 	
+	// this was old behavior due to a bug in modeling
+	private boolean inverseParentChildRelationship;
+	
 	public UMLRegistry(String id) {
 		this.id = id;
 	}
@@ -329,6 +332,12 @@ public class UMLRegistry implements DefinedTypeRegistry {
 			for (org.w3c.dom.Element generalization : new XPath("uml:Namespace.ownedElement/uml:Generalization").setNamespaceContext(resolver).query(model).asElementList()) {
 				String superClass = new XPath("uml:Generalization.parent/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
 				String childClass = new XPath("uml:Generalization.child/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
+				// simulate old behavior
+				if (inverseParentChildRelationship) {
+					String tmp = superClass;
+					superClass = childClass;
+					childClass = tmp;
+				}
 				if (superClass == null || childClass == null) {
 					logger.error("Can not implement generalization from " + superClass + " to " + childClass);
 					continue;
@@ -542,6 +551,14 @@ public class UMLRegistry implements DefinedTypeRegistry {
 
 	public void setModifiedField(String modifiedField) {
 		this.modifiedField = modifiedField;
+	}
+
+	public boolean isInverseParentChildRelationship() {
+		return inverseParentChildRelationship;
+	}
+
+	public void setInverseParentChildRelationship(boolean inverseParentChildRelationship) {
+		this.inverseParentChildRelationship = inverseParentChildRelationship;
 	}
 	
 }
