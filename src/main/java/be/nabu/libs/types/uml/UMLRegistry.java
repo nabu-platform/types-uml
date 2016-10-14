@@ -49,6 +49,7 @@ import be.nabu.libs.types.properties.ForeignKeyProperty;
 import be.nabu.libs.types.properties.FormatProperty;
 import be.nabu.libs.types.properties.MaxOccursProperty;
 import be.nabu.libs.types.properties.MinOccursProperty;
+import be.nabu.libs.types.properties.PrimaryKeyProperty;
 import be.nabu.libs.types.properties.TimezoneProperty;
 import be.nabu.libs.types.structure.DefinedStructure;
 import be.nabu.libs.types.structure.Structure;
@@ -176,7 +177,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				structure.setNamespace(namespace);
 				if (addDatabaseFields) {
 					DefinedSimpleType<Date> dateWrapper = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(Date.class);
-					structure.add(new SimpleElementImpl("id", idType, structure));
+					structure.add(new SimpleElementImpl("id", idType, structure, new ValueImpl<Boolean>(PrimaryKeyProperty.getInstance(), true)));
 					if (createdField != null) {
 						structure.add(new SimpleElementImpl<Date>(createdField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
 					}
