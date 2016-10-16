@@ -175,16 +175,6 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				structure.setName(clazz.getAttribute("name"));
 				structure.setId((id == null ? "" : id + ".") + name + "." + structure.getName());
 				structure.setNamespace(namespace);
-				if (addDatabaseFields) {
-					DefinedSimpleType<Date> dateWrapper = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(Date.class);
-					structure.add(new SimpleElementImpl("id", idType, structure, new ValueImpl<Boolean>(PrimaryKeyProperty.getInstance(), true)));
-					if (createdField != null) {
-						structure.add(new SimpleElementImpl<Date>(createdField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
-					}
-					if (modifiedField != null) {
-						structure.add(new SimpleElementImpl<Date>(modifiedField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
-					}
-				}
 				dataTypes.put(clazz.getAttribute("xmi.id"), structure);
 				registry.register(structure);
 				boolean hasCollectionName = false;
@@ -211,6 +201,16 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				if (!hasCollectionName && generateCollectionNames) {
 					structure.setProperty(new ValueImpl<String>(CollectionNameProperty.getInstance(), structure.getName() + "s"));
+				}
+				if (addDatabaseFields) {
+					DefinedSimpleType<Date> dateWrapper = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(Date.class);
+					structure.add(new SimpleElementImpl("id", idType, structure, new ValueImpl<Boolean>(PrimaryKeyProperty.getInstance(), true)));
+					if (createdField != null) {
+						structure.add(new SimpleElementImpl<Date>(createdField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
+					}
+					if (modifiedField != null) {
+						structure.add(new SimpleElementImpl<Date>(modifiedField, dateWrapper, structure, new ValueImpl<TimeZone>(TimezoneProperty.getInstance(), TimeZone.getTimeZone("UTC"))));
+					}
 				}
 			}
 			// need to fill in attributes _after_ all classes are loaded, otherwise we can't resolve references
@@ -356,6 +356,17 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					}
 				}
 				else if (useExtensions || (localUseExtensionsMap.containsKey(superClass) && localUseExtensionsMap.get(superClass))) {
+					// remove the database fields from the child type, it will inherit them from the parent
+					if (addDatabaseFields && childType instanceof ModifiableComplexType) {
+						ModifiableComplexType modifiableChild = (ModifiableComplexType) childType;
+						modifiableChild.remove(modifiableChild.get("id"));
+						if (createdField != null) {
+							modifiableChild.remove(modifiableChild.get(createdField));
+						}
+						if (modifiedField != null) {
+							modifiableChild.remove(modifiableChild.get(modifiedField));
+						}
+					}
 					((ModifiableType) childType).setProperty(new ValueImpl<Type>(SuperTypeProperty.getInstance(), superType));
 				}
 				else if (childType instanceof ModifiableComplexType) {
