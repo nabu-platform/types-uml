@@ -93,6 +93,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	private Map<String, Boolean> localIgnoreExtensionsMap = new HashMap<String, Boolean>();
 	// the xmi id for a "documentation" tag
 	private String documentationId;
+	private List<? extends UMLRegistry> imports;
 	
 	// this was old behavior due to a bug in modeling
 	private boolean inverseParentChildRelationship;
@@ -345,10 +346,28 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				Type superType = dataTypes.get(superClass);
 				Type childType = dataTypes.get(childClass);
+				
+				UMLRegistry superRepository = this;
+				// if not found, check imports to see if we can find it there
+				if (superType == null && imports != null) {
+					for (UMLRegistry imported : imports) {
+						superType = imported.dataTypes.get(superClass);
+						if (superType != null) {
+							superRepository = imported;
+							break;
+						}
+					}
+				}
+				
 				if (superType == null || childType == null) {
 					logger.error("Can not resolve " + superClass + " or " + childClass + ": " + superType + " / " + childType);
 					continue;
 				}
+				// make sure we use the settings from whatever repository we pulled the supertype from
+				Map<String, Boolean> localIgnoreExtensionsMap = superRepository.localIgnoreExtensionsMap; 
+				boolean useExtensions = superRepository.useExtensions;
+				Map<String, Boolean> localUseExtensionsMap = superRepository.localUseExtensionsMap;
+				
 				if (localIgnoreExtensionsMap.containsKey(superClass) && localIgnoreExtensionsMap.get(superClass) ) {
 					if (superType instanceof DefinedType && childType instanceof ComplexType && ((ComplexType) childType).get("id") != null) {
 						Element<?> element = ((ComplexType) childType).get("id");
@@ -401,6 +420,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					logger.error("Can not yet model many to many relations: " + fromMaxOccurs + " - " + toMaxOccurs);
 					continue;
 				}
+				// note that if the participant comes from an imported file, argouml itself will block lines in the wrong direction
 				ComplexType fromParticipant = (ComplexType) getParticipant(ends.get(0));
 				ComplexType toParticipant = (ComplexType) getParticipant(ends.get(1));
 				if (fromParticipant == null || toParticipant == null) {
@@ -471,7 +491,24 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		return "-1".equals(multiplicity.getAttribute("upper")) ? 0 : Integer.parseInt(multiplicity.getAttribute("upper"));
 	}
 	private Type getParticipant(org.w3c.dom.Element associationEnd) {
-		return dataTypes.get(new XPath("uml:AssociationEnd.participant/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(associationEnd).asString());	
+		String reference = new XPath("uml:AssociationEnd.participant/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(associationEnd).asString();
+		// external references start with the argouml url e.g.: http://argouml.org/user-profiles/core.xmi#127-0-1-1--349ff93a:1578fc8f0d7:-8000:0000000000000990
+		if (reference == null || reference.trim().isEmpty()) {
+			String href = new XPath("uml:AssociationEnd.participant/uml:Class/@href").setNamespaceContext(resolver).query(associationEnd).asString();
+			if (href != null && !href.trim().isEmpty()) {
+				reference = href.replaceFirst("^.*#", "");
+			}
+		}
+		Type type = dataTypes.get(reference);
+		if (type == null && imports != null) {
+			for (UMLRegistry imported : imports) {
+				type = imported.dataTypes.get(reference);
+				if (type != null) {
+					break;
+				}
+			}
+		}
+		return type;
 	}
 	
 	@Override
@@ -571,6 +608,14 @@ public class UMLRegistry implements DefinedTypeRegistry {
 
 	public void setInverseParentChildRelationship(boolean inverseParentChildRelationship) {
 		this.inverseParentChildRelationship = inverseParentChildRelationship;
+	}
+
+	public List<? extends UMLRegistry> getImports() {
+		return imports;
+	}
+
+	public void setImports(List<? extends UMLRegistry> imports) {
+		this.imports = imports;
 	}
 	
 }
