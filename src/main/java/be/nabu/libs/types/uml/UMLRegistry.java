@@ -333,7 +333,19 @@ public class UMLRegistry implements DefinedTypeRegistry {
 			// load any generalizations between them (extensions)
 			for (org.w3c.dom.Element generalization : new XPath("uml:Namespace.ownedElement/uml:Generalization").setNamespaceContext(resolver).query(model).asElementList()) {
 				String superClass = new XPath("uml:Generalization.parent/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
+				if (superClass == null || superClass.trim().isEmpty()) {
+					String href = new XPath("uml:Generalization.parent/uml:Class/@href").setNamespaceContext(resolver).query(generalization).asString();
+					if (href != null && !href.trim().isEmpty()) {
+						superClass = href.replaceFirst("^.*#", "");
+					}
+				}
 				String childClass = new XPath("uml:Generalization.child/uml:Class/@xmi.idref").setNamespaceContext(resolver).query(generalization).asString();
+				if (childClass == null || childClass.trim().isEmpty()) {
+					String href = new XPath("uml:Generalization.child/uml:Class/@href").setNamespaceContext(resolver).query(generalization).asString();
+					if (href != null && !href.trim().isEmpty()) {
+						childClass = href.replaceFirst("^.*#", "");
+					}
+				}
 				// simulate old behavior
 				if (inverseParentChildRelationship) {
 					String tmp = superClass;
