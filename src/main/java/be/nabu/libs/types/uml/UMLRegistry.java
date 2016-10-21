@@ -43,6 +43,7 @@ import be.nabu.libs.types.api.Type;
 import be.nabu.libs.types.base.ComplexElementImpl;
 import be.nabu.libs.types.base.SimpleElementImpl;
 import be.nabu.libs.types.base.ValueImpl;
+import be.nabu.libs.types.properties.AggregateProperty;
 import be.nabu.libs.types.properties.CollectionNameProperty;
 import be.nabu.libs.types.properties.CommentProperty;
 import be.nabu.libs.types.properties.ForeignKeyProperty;
@@ -428,6 +429,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				Integer fromMaxOccurs = getMaxOccurs(ends.get(0));
 				Integer toMinOccurs = getMinOccurs(ends.get(1));
 				Integer toMaxOccurs = getMaxOccurs(ends.get(1));
+				
+				String fromAggregate = getAggregate(ends.get(0));
+				String toAggregate = getAggregate(ends.get(1));
 				if (fromMaxOccurs != null && fromMaxOccurs != 1 && toMaxOccurs != null && toMaxOccurs != 1) {
 					logger.error("Can not yet model many to many relations: " + fromMaxOccurs + " - " + toMaxOccurs);
 					continue;
@@ -447,6 +451,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						if (fromParticipant instanceof DefinedType) {
 							values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) fromParticipant).getId() + ":id"));
 						}
+						if (fromAggregate != null) {
+							values.add(new ValueImpl<String>(AggregateProperty.getInstance(), fromAggregate));
+						}
 						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(fromParticipant.getName()) + "Id" : associationName, idType, toParticipant, values.toArray(new Value[values.size()]));
 						if (fromMinOccurs != null && fromMinOccurs != 1) {
 							element.setProperty(new ValueImpl<Integer>(MinOccursProperty.getInstance(), fromMinOccurs));
@@ -457,6 +464,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					else {
 						if (toParticipant instanceof DefinedType) {
 							values.add(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) toParticipant).getId() + ":id"));
+						}
+						if (toAggregate != null) {
+							values.add(new ValueImpl<String>(AggregateProperty.getInstance(), toAggregate));
 						}
 						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(toParticipant.getName()) + "Id" : associationName, idType, fromParticipant, values.toArray(new Value[values.size()]));
 						if (toMinOccurs != null && toMinOccurs != 1) {
@@ -491,6 +501,11 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		return name.substring(0, 1).toLowerCase() + name.substring(1);
 	}
 
+	private String getAggregate(org.w3c.dom.Element associationEnd) {
+		String aggregate = new XPath("@aggregation").setNamespaceContext(resolver).query(associationEnd).asString();
+		return aggregate == null || aggregate.equalsIgnoreCase("none") ? null : aggregate;
+	}
+	
 	private Integer getMinOccurs(org.w3c.dom.Element associationEnd) {
 		org.w3c.dom.Element multiplicity = new XPath("uml:AssociationEnd.multiplicity/uml:Multiplicity/uml:Multiplicity.range/uml:MultiplicityRange").setNamespaceContext(resolver).query(associationEnd).asElement();
 		return multiplicity == null || "-1".equals(multiplicity.getAttribute("lower")) ? null : Integer.parseInt(multiplicity.getAttribute("lower"));
