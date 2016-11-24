@@ -265,6 +265,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					}
 					else {
 						String referencedTypeId = new XPath("uml:StructuralFeature.type/uml:DataType/@href").setNamespaceContext(resolver).query(attribute).asString();
+						if (referencedTypeId == null || referencedTypeId.trim().isEmpty()) {
+							referencedTypeId = new XPath("uml:StructuralFeature.type/uml:Class/@href").setNamespaceContext(resolver).query(attribute).asString();	
+						}
 						if (referencedTypeId != null) {
 							try {
 								URI uri = new URI(referencedTypeId);
@@ -272,27 +275,39 @@ public class UMLRegistry implements DefinedTypeRegistry {
 								if (uri.getFragment() != null) {
 									// if we don't know the data type yet, do a best effort to load it
 									// each uri should only be loaded (or tried) once
-									if (!dataTypes.containsKey(uri.getFragment()) && !loadedUris.contains(uri)) {
-										loadedUris.add(uri);
-										InputStream resolvedData = getResourceResolver().resolve(uri);
-										if (resolvedData != null) {
-											try {
-												Document document = XMLUtils.toDocument(resolvedData, true);
-												load(document);
+									if (!dataTypes.containsKey(uri.getFragment())) {
+										if (imports != null) {
+											for (UMLRegistry imported : imports) {
+												if (imported.dataTypes.containsKey(uri.getFragment())) {
+													type = imported.dataTypes.get(uri.getFragment());
+													dataTypeName = imported.dataTypeNames.get(uri.getFragment());
+												}
 											}
-											catch (SAXException e) {
-												logger.error("Can not parse referenced scheme: " + uri, e);
-											}
-											catch (ParserConfigurationException e) {
-												logger.error("Can not parse referenced scheme: " + uri, e);
-											}
-											finally {
-												resolvedData.close();
+										}
+										if (type == null && !loadedUris.contains(uri)) {
+											loadedUris.add(uri);
+											InputStream resolvedData = getResourceResolver().resolve(uri);
+											if (resolvedData != null) {
+												try {
+													Document document = XMLUtils.toDocument(resolvedData, true);
+													load(document);
+												}
+												catch (SAXException e) {
+													logger.error("Can not parse referenced scheme: " + uri, e);
+												}
+												catch (ParserConfigurationException e) {
+													logger.error("Can not parse referenced scheme: " + uri, e);
+												}
+												finally {
+													resolvedData.close();
+												}
 											}
 										}
 									}
-									type = dataTypes.get(uri.getFragment());
-									dataTypeName = dataTypeNames.get(uri.getFragment());
+									if (type == null) {
+										type = dataTypes.get(uri.getFragment());
+										dataTypeName = dataTypeNames.get(uri.getFragment());
+									}
 								}
 							}
 							catch (URISyntaxException e) {
