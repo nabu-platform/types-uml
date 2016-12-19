@@ -659,5 +659,12 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	public void setImports(List<? extends UMLRegistry> imports) {
 		this.imports = imports;
 	}
-	
+
+	public boolean isUuids() {
+		return uuids;
+	}
+
+	public void setUuids(boolean uuids) {
+		this.uuids = uuids;
+	}
 }
