@@ -247,8 +247,13 @@ public class UMLRegistry implements DefinedTypeRegistry {
 								values.add(new ValueImpl(CommentProperty.getInstance(), value));
 							}
 							else if (properties.containsKey(id) && value != null) {
-								Object convertedValue = converter.convert(value, properties.get(id).getValueClass());
-								values.add(new ValueImpl(properties.get(id), convertedValue));
+								try {
+									Object convertedValue = converter.convert(value, properties.get(id).getValueClass());
+									values.add(new ValueImpl(properties.get(id), convertedValue));
+								}
+								catch (Exception e) {
+									throw new IllegalArgumentException("Could not unmarshal property: " + properties.get(id).getName() + " (" + attributeName + ")");
+								}
 							}
 						}
 					}
