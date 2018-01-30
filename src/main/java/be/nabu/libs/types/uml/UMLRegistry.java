@@ -48,6 +48,7 @@ import be.nabu.libs.types.properties.CollectionNameProperty;
 import be.nabu.libs.types.properties.CommentProperty;
 import be.nabu.libs.types.properties.ForeignKeyProperty;
 import be.nabu.libs.types.properties.FormatProperty;
+import be.nabu.libs.types.properties.HiddenProperty;
 import be.nabu.libs.types.properties.MaxOccursProperty;
 import be.nabu.libs.types.properties.MinOccursProperty;
 import be.nabu.libs.types.properties.PrimaryKeyProperty;
@@ -180,6 +181,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				dataTypes.put(clazz.getAttribute("xmi.id"), structure);
 				registry.register(structure);
 				boolean hasCollectionName = false;
+				boolean hidden = false;
 				// you can set a tag on a class to have it use extensions
 				for (org.w3c.dom.Element tag : new XPath("uml:ModelElement.taggedValue/uml:TaggedValue").setNamespaceContext(resolver).query(clazz).asElementList()) {
 					String value = new XPath("uml:TaggedValue.dataValue").setNamespaceContext(resolver).query(tag).asString();
@@ -192,6 +194,10 @@ public class UMLRegistry implements DefinedTypeRegistry {
 					}
 					if (localUseExtensions != null && localUseExtensions.equals(id)) {
 						localUseExtensionsMap.put(clazz.getAttribute("xmi.id"), value.equals("true"));
+						if (value.equals("true")) {
+							structure.setProperty(new ValueImpl<Boolean>(HiddenProperty.getInstance(), true));
+							hidden = true;
+						}
 					}
 					else if (localIgnoreExtensions != null && localIgnoreExtensions.equals(id)) {
 						localIgnoreExtensionsMap.put(clazz.getAttribute("xmi.id"), value.equals("true"));
@@ -201,7 +207,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						hasCollectionName = true;
 					}
 				}
-				if (!hasCollectionName && generateCollectionNames) {
+				if (!hasCollectionName && generateCollectionNames && !hidden) {
 					structure.setProperty(new ValueImpl<String>(CollectionNameProperty.getInstance(), structure.getName() + "s"));
 				}
 				if (addDatabaseFields) {
@@ -398,10 +404,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				// make sure we use the settings from whatever repository we pulled the supertype from
 				Map<String, Boolean> localIgnoreExtensionsMap = superRepository.localIgnoreExtensionsMap; 
-				boolean useExtensions = superRepository.useExtensions;
+//				boolean useExtensions = this.useExtensions || superRepository.useExtensions;
 				Map<String, Boolean> localUseExtensionsMap = superRepository.localUseExtensionsMap;
-				
-				if (localIgnoreExtensionsMap.containsKey(superClass) && localIgnoreExtensionsMap.get(superClass) ) {
+				if (!useExtensions && localIgnoreExtensionsMap.containsKey(superClass) && localIgnoreExtensionsMap.get(superClass)) {
 					if (superType instanceof DefinedType && childType instanceof ComplexType && ((ComplexType) childType).get("id") != null) {
 						Element<?> element = ((ComplexType) childType).get("id");
 						element.setProperty(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) superType).getId() + ":id"));
@@ -672,4 +677,13 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	public void setUuids(boolean uuids) {
 		this.uuids = uuids;
 	}
+
+	public boolean isUseExtensions() {
+		return useExtensions;
+	}
+
+	public void setUseExtensions(boolean useExtensions) {
+		this.useExtensions = useExtensions;
+	}
+	
 }
