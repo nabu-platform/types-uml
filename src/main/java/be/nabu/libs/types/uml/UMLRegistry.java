@@ -29,6 +29,7 @@ import be.nabu.libs.property.api.Property;
 import be.nabu.libs.property.api.Value;
 import be.nabu.libs.types.SimpleTypeWrapperFactory;
 import be.nabu.libs.types.TypeRegistryImpl;
+import be.nabu.libs.types.TypeUtils;
 import be.nabu.libs.types.api.ComplexType;
 import be.nabu.libs.types.api.DefinedSimpleType;
 import be.nabu.libs.types.api.DefinedType;
@@ -72,7 +73,8 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		resolver.registerPrefix("uml", "org.omg.xmi.namespace.UML");
 	}
 	
-	private String createdField = "dbCreatedUtc", modifiedField = "dbModifiedUtc";
+	//private String createdField = "dbCreatedUtc", modifiedField = "dbModifiedUtc";
+	private String createdField, modifiedField;
 	private String id;
 	private ModifiableTypeRegistry registry = new TypeRegistryImpl();
 	private Map<String, Element<?>> children = new HashMap<String, Element<?>>();
@@ -96,6 +98,10 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	// the xmi id for a "documentation" tag
 	private String documentationId;
 	private List<? extends UMLRegistry> imports;
+	
+	// when generating flat documents we force the one in a 1-* relation to contain the referencing id (because this is likely for database purposes)
+	// in the hierarchic documents we might not need to
+	private boolean forceOneToManyInNonFlat;
 	
 	// this was old behavior due to a bug in modeling
 	private boolean inverseParentChildRelationship;
@@ -479,7 +485,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						if (fromAggregate != null) {
 							values.add(new ValueImpl<String>(AggregateProperty.getInstance(), fromAggregate));
 						}
-						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(fromParticipant.getName()) + "Id" : associationName, idType, toParticipant, values.toArray(new Value[values.size()]));
+						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(fromParticipant.getName()) + "Id" : associationName, getPrimaryKeyType(fromParticipant), toParticipant, values.toArray(new Value[values.size()]));
 						if (fromMinOccurs != null && fromMinOccurs != 1) {
 							element.setProperty(new ValueImpl<Integer>(MinOccursProperty.getInstance(), fromMinOccurs));
 						}
@@ -493,7 +499,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						if (toAggregate != null) {
 							values.add(new ValueImpl<String>(AggregateProperty.getInstance(), toAggregate));
 						}
-						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(toParticipant.getName()) + "Id" : associationName, idType, fromParticipant, values.toArray(new Value[values.size()]));
+						SimpleElementImpl element = new SimpleElementImpl(associationName == null ? elementize(toParticipant.getName()) + "Id" : associationName, getPrimaryKeyType(toParticipant), fromParticipant, values.toArray(new Value[values.size()]));
 						if (toMinOccurs != null && toMinOccurs != 1) {
 							element.setProperty(new ValueImpl<Integer>(MinOccursProperty.getInstance(), toMinOccurs));
 						}
@@ -502,7 +508,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				else {
 					// the "to" is a many in a one to many relationship, map it in the to
-					if (toMaxOccurs != null && toMaxOccurs != 1) {
+					if (toMaxOccurs != null && toMaxOccurs != 1 && forceOneToManyInNonFlat) {
 						ComplexElementImpl element = new ComplexElementImpl(associationName == null ? elementize(fromParticipant.getName()) : associationName, fromParticipant, toParticipant);
 						if (fromMinOccurs != null && fromMinOccurs != 1) {
 							element.setProperty(new ValueImpl<Integer>(MinOccursProperty.getInstance(), fromMinOccurs));
@@ -515,11 +521,32 @@ public class UMLRegistry implements DefinedTypeRegistry {
 						if (toMinOccurs != null && toMinOccurs != 1) {
 							element.setProperty(new ValueImpl<Integer>(MinOccursProperty.getInstance(), toMinOccurs));
 						}
+						if (toMaxOccurs != null && toMaxOccurs != 1) {
+							element.setProperty(new ValueImpl<Integer>(MaxOccursProperty.getInstance(), toMaxOccurs));
+						}
 						((ModifiableComplexType) fromParticipant).add(element);
 					}
 				}
 			}
 		}
+	}
+	
+	public boolean isForceOneToManyInNonFlat() {
+		return forceOneToManyInNonFlat;
+	}
+
+	public void setForceOneToManyInNonFlat(boolean forceOneToManyInNonFlat) {
+		this.forceOneToManyInNonFlat = forceOneToManyInNonFlat;
+	}
+
+	private SimpleType<?> getPrimaryKeyType(ComplexType type) {
+		for (Element<?> element : TypeUtils.getAllChildren(type)) {
+			Value<Boolean> property = element.getProperty(PrimaryKeyProperty.getInstance());
+			if (property != null && property.getValue() != null && property.getValue()) {
+				return (SimpleType<?>) element.getType();
+			}
+		}
+		return null;
 	}
 	
 	private static String elementize(String name) {
