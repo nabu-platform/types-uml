@@ -35,6 +35,7 @@ import be.nabu.libs.types.api.DefinedSimpleType;
 import be.nabu.libs.types.api.DefinedType;
 import be.nabu.libs.types.api.DefinedTypeRegistry;
 import be.nabu.libs.types.api.Element;
+import be.nabu.libs.types.api.ModifiableElement;
 import be.nabu.libs.types.api.ModifiableType;
 import be.nabu.libs.types.api.ModifiableComplexType;
 import be.nabu.libs.types.api.ModifiableTypeRegistry;
@@ -53,6 +54,7 @@ import be.nabu.libs.types.properties.HiddenProperty;
 import be.nabu.libs.types.properties.MaxOccursProperty;
 import be.nabu.libs.types.properties.MinOccursProperty;
 import be.nabu.libs.types.properties.PrimaryKeyProperty;
+import be.nabu.libs.types.properties.RestrictProperty;
 import be.nabu.libs.types.properties.TimezoneProperty;
 import be.nabu.libs.types.structure.DefinedStructure;
 import be.nabu.libs.types.structure.Structure;
@@ -420,16 +422,33 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				}
 				else if (useExtensions || (localUseExtensionsMap.containsKey(superClass) && localUseExtensionsMap.get(superClass))) {
 					// remove the database fields from the child type, it will inherit them from the parent
-					if (addDatabaseFields && childType instanceof ModifiableComplexType) {
-						ModifiableComplexType modifiableChild = (ModifiableComplexType) childType;
-						modifiableChild.remove(modifiableChild.get("id"));
-						if (createdField != null) {
-							modifiableChild.remove(modifiableChild.get(createdField));
-						}
-						if (modifiedField != null) {
-							modifiableChild.remove(modifiableChild.get(modifiedField));
-						}
+					// @4-3-2020: we no longer want to throw these fields away, our "new" insertion logic for emodels (did not work until this time) counts on the fields that exist in the table to be available at this point
+					// our select logic has also been conditioned to expect this, so that actually breaks at this point when the fields are out
+//					if (addDatabaseFields && childType instanceof ModifiableComplexType) {
+//						ModifiableComplexType modifiableChild = (ModifiableComplexType) childType;
+//						modifiableChild.remove(modifiableChild.get("id"));
+//						if (createdField != null) {
+//							modifiableChild.remove(modifiableChild.get(createdField));
+//						}
+//						if (modifiedField != null) {
+//							modifiableChild.remove(modifiableChild.get(modifiedField));
+//						}
+//					}
+					// we do need to maintain our foreign keys though, even in this case!
+					if (superType instanceof DefinedType && childType instanceof ComplexType && ((ComplexType) childType).get("id") != null) {
+						Element<?> element = ((ComplexType) childType).get("id");
+						element.setProperty(new ValueImpl<String>(ForeignKeyProperty.getInstance(), ((DefinedType) superType).getId() + ":id"));
 					}
+					// we also want to restrict the "inherited" fields
+					String restrict = "id";
+					if (createdField != null) {
+						restrict += "," + createdField;
+					}
+					if (modifiedField != null) {
+						restrict += "," + modifiedField;
+					}
+					((ModifiableType) childType).setProperty(new ValueImpl<String>(RestrictProperty.getInstance(), restrict));
+					
 					((ModifiableType) childType).setProperty(new ValueImpl<Type>(SuperTypeProperty.getInstance(), superType));
 				}
 				else if (childType instanceof ModifiableComplexType) {
