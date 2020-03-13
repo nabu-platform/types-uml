@@ -47,6 +47,7 @@ import be.nabu.libs.types.base.ValueImpl;
 import be.nabu.libs.types.properties.AggregateProperty;
 import be.nabu.libs.types.properties.CollectionNameProperty;
 import be.nabu.libs.types.properties.CommentProperty;
+import be.nabu.libs.types.properties.DuplicateProperty;
 import be.nabu.libs.types.properties.ForeignKeyProperty;
 import be.nabu.libs.types.properties.FormatProperty;
 import be.nabu.libs.types.properties.HiddenProperty;
@@ -430,6 +431,15 @@ public class UMLRegistry implements DefinedTypeRegistry {
 							modifiableChild.remove(modifiableChild.get(modifiedField));
 						}
 					}
+					// @4-3-2020: from now on we need to explicitly state which fields need to be duplicated
+					String duplicate = "id";
+					if (createdField != null) {
+						duplicate += "," + createdField;
+					}
+					if (modifiedField != null) {
+						duplicate += "," + modifiedField;
+					}
+					((ModifiableType) childType).setProperty(new ValueImpl<String>(DuplicateProperty.getInstance(), duplicate));
 					((ModifiableType) childType).setProperty(new ValueImpl<Type>(SuperTypeProperty.getInstance(), superType));
 				}
 				else if (childType instanceof ModifiableComplexType) {
