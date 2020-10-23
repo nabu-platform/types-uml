@@ -58,6 +58,8 @@
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000019' name='ignoreExtensions' isSpecification='false'/>
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000020' name='unique' isSpecification='false'/>
 				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000021' name='generated' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000022' name='scope' isSpecification='false'/>
+				<UML:TagDefinition xmi.id='be.nabu.uml.xmi:base:properties:0000000000000023' name='identifiable' isSpecification='false'/>
 			</UML:Namespace.ownedElement>
 		</UML:Model>
 	</XMI.content>
