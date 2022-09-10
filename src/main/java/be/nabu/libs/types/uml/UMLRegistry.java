@@ -41,6 +41,7 @@ import be.nabu.libs.types.api.ModifiableTypeRegistry;
 import be.nabu.libs.types.api.SimpleType;
 import be.nabu.libs.types.api.SimpleTypeWrapper;
 import be.nabu.libs.types.api.Type;
+import be.nabu.libs.types.api.TypeRegistry;
 import be.nabu.libs.types.base.ComplexElementImpl;
 import be.nabu.libs.types.base.SimpleElementImpl;
 import be.nabu.libs.types.base.ValueImpl;
@@ -98,7 +99,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 	private Map<String, Boolean> localIgnoreExtensionsMap = new HashMap<String, Boolean>();
 	// the xmi id for a "documentation" tag
 	private String documentationId;
-	private List<? extends UMLRegistry> imports;
+	private List<? extends TypeRegistry> imports;
 	
 	// when generating flat documents we force the one in a 1-* relation to contain the referencing id (because this is likely for database purposes)
 	// in the hierarchic documents we might not need to
@@ -111,6 +112,14 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		this.id = id;
 	}
 	
+	@Override
+	public Type getTypeById(String id) {
+		if (dataTypes.containsKey(id)) {
+			return dataTypes.get(id);
+		}
+		return DefinedTypeRegistry.super.getTypeById(id);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void load(Document...documents) {
 		List<org.w3c.dom.Element> models = new ArrayList<org.w3c.dom.Element>();
@@ -179,7 +188,8 @@ public class UMLRegistry implements DefinedTypeRegistry {
 			// load the properties
 			// load the data types
 			// load the classes
-			DefinedSimpleType idType = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(uuids ? UUID.class : Long.class);
+			Class<?> tmpWorkaround = uuids ? UUID.class : Long.class;
+			DefinedSimpleType idType = SimpleTypeWrapperFactory.getInstance().getWrapper().wrap(tmpWorkaround);
 			for (org.w3c.dom.Element clazz : new XPath("uml:Namespace.ownedElement/uml:Class").setNamespaceContext(resolver).query(model).asElementList()) {
 				DefinedStructure structure = new DefinedStructure();
 				structure.setName(clazz.getAttribute("name"));
@@ -295,10 +305,19 @@ public class UMLRegistry implements DefinedTypeRegistry {
 									// each uri should only be loaded (or tried) once
 									if (!dataTypes.containsKey(uri.getFragment())) {
 										if (imports != null) {
-											for (UMLRegistry imported : imports) {
-												if (imported.dataTypes.containsKey(uri.getFragment())) {
-													type = imported.dataTypes.get(uri.getFragment());
-													dataTypeName = imported.dataTypeNames.get(uri.getFragment());
+											for (TypeRegistry imported : imports) {
+												type = imported.getTypeById(uri.getFragment());
+												if (type != null) {
+													dataTypeName = type.getName();
+												}
+//												else if (imported instanceof UMLRegistry) {
+//													if (((UMLRegistry) imported).dataTypes.containsKey(uri.getFragment())) {
+//														type = ((UMLRegistry) imported).dataTypes.get(uri.getFragment());
+//														dataTypeName = ((UMLRegistry) imported).dataTypeNames.get(uri.getFragment());
+//													}
+//												}
+												if (type != null) {
+													break;
 												}
 											}
 										}
@@ -396,12 +415,21 @@ public class UMLRegistry implements DefinedTypeRegistry {
 				UMLRegistry superRepository = this;
 				// if not found, check imports to see if we can find it there
 				if (superType == null && imports != null) {
-					for (UMLRegistry imported : imports) {
-						superType = imported.dataTypes.get(superClass);
-						if (superType != null) {
-							superRepository = imported;
-							break;
-						}
+					for (TypeRegistry imported : imports) {
+						superType = imported.getTypeById(superClass);
+						
+						// @2022-03-24: we are updating the codebase to move away from UML
+						// ignoreExtensions and useExtensions were in very limited use (ignore extensions on node & masterdataentry, useextensions on timeconstrained)
+						// in the new version, timeconstrained is no longer a thing, it is entirely unclear what the other usecase actually was, it appears to create a foreign key only
+						// for now, we can live without
+						// we emulate the super repository with our own which will have an empty map for both
+						superRepository = imported instanceof UMLRegistry ? (UMLRegistry) imported : this;
+						
+//						superType = imported.dataTypes.get(superClass);
+//						if (superType != null) {
+//							superRepository = imported;
+//							break;
+//						}
 					}
 				}
 				
@@ -590,8 +618,9 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		}
 		Type type = dataTypes.get(reference);
 		if (type == null && imports != null) {
-			for (UMLRegistry imported : imports) {
-				type = imported.dataTypes.get(reference);
+			for (TypeRegistry imported : imports) {
+//				type = imported.dataTypes.get(reference);
+				type = imported.getTypeById(reference);
 				if (type != null) {
 					break;
 				}
@@ -699,7 +728,7 @@ public class UMLRegistry implements DefinedTypeRegistry {
 		this.inverseParentChildRelationship = inverseParentChildRelationship;
 	}
 
-	public List<? extends UMLRegistry> getImports() {
+	public List<? extends TypeRegistry> getImports() {
 		return imports;
 	}
 
